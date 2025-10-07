@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCE - Gráficos & Dashboards On-Chain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+
+        :root {
+            --primary: #0066cc;
+            --success: #00c853;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --dark: #1a1a2e;
+            --secondary-dark: #2c3e50;
+            --card-bg: #2f4159;
+            --text-light: #f0f4f8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--secondary-dark) 100%);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .main-nav {
+            background: var(--dark);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+        
+        .nav-logo a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            padding: 20px 0;
+        }
+
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 8px;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(0, 102, 204, 0.2);
+            color: white;
+        }
+
+        /* Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #0052a3 100%);
+            color: white;
+            padding: 60px 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header-content h1 {
+            font-size: 3em;
+            margin-bottom: 12px;
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .header-content p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        /* Charts Grid - HIERARQUIA INTELIGENTE */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 30px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+
+        .chart-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border-left-width: 6px;
+        }
+
+        /* PRINCIPAL (50% largura) */
+        .chart-card.primary {
+            grid-column: span 6;
+        }
+
+        /* SECUNDÁRIO (33% largura) */
+        .chart-card.secondary {
+            grid-column: span 4;
+            max-height: 360px;
+        }
+
+        /* TERCIÁRIO (25% largura) */
+        .chart-card.tertiary {
+            grid-column: span 3;
+        }
+
+        /* DESTAQUE (100% largura) */
+        .chart-card.featured {
+            grid-column: 1 / -1;
+        }
+
+        .chart-card h2 {
+            font-size: 1.5em;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .chart-subtitle {
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chart-card.featured .chart-subtitle {
+            margin-bottom: -20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            cursor: pointer;
+        }
+
+        /* Ajustes de altura */
+        .chart-card.primary .chart-container {
+            height: 380px;
+        }
+
+        .chart-card.featured .chart-container {
+            height: 500px;
+        }
+        
+        /* Risk Matrix */
+        .matrix-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 100px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .matrix-tooltip {
+            position: fixed;
+            display: none;
+            background: var(--dark);
+            color: var(--text-light);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+            pointer-events: none;
+            z-index: 9999;
+            min-width: 200px;
+        }
+
+        .matrix-tooltip strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            display: none;
+            padding-top: 50px;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: auto;
+            padding: 30px;
+            border: 1px solid var(--primary);
+            width: 80%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .close-btn {
+            color: var(--text-light);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--danger);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .modal-company-list {
+            list-style: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .modal-company-list li {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+            font-size: 0.9em;
+        }
+
+        .modal-company-list li strong {
+            color: var(--success);
+            margin-right: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark);
+            color: white;
+            padding: 40px 30px;
+            margin-top: 10px;
+            border-top: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .footer-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .footer p {
+            opacity: 0.8;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .chart-card.primary,
+            .chart-card.secondary {
+                grid-column: span 6;
+            }
+            
+            .chart-card.tertiary {
+                grid-column: span 3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .header-content h1 {
+                font-size: 2em;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-card.primary,
+            .chart-card.secondary,
+            .chart-card.tertiary,
+            .chart-card.featured {
+                grid-column: span 1;
+            }
+
+            .chart-container,
+            .chart-card.primary .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <span class="logo-text">CRYPTO</span>
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="charts.html" class="nav-link active">Gráficos</a></li>
+                <li><a href="timeline.html" class="nav-link">Timeline</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <div class="header-content">
+            <h1>Dashboards On-Chain & Volatilidade</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="charts-grid">
+            
+            <section class="chart-card featured">
+                <h2>Matriz Risco-Retorno</h2>
+                <p class="chart-subtitle">Volatilidade (Gamma) vs Upside Potencial</p>
+                <div class="chart-container">
+                    <canvas id="risk-matrix-canvas"></canvas>
+                </div>
+                <div class="matrix-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--success);"></div>
+                        <span>Baixo Risco (Cód) & Alto Retorno</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--primary);"></div>
+                        <span>Moderado Risco-Retorno</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--warning);"></div>
+                        <span>Alto Risco (Vol) e Alto Retorno</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--danger);"></div>
+                        <span>Evitar (Alto Risco/Baixo Retorno)</span>
+                    </div>
+                </div>
+                <div class="matrix-tooltip" id="matrix-tooltip"></div>
+            </section>
+
+            <section class="chart-card primary">
+                <h2>Matriz de Valuation (TVL/MC vs Protocol Revenue)</h2>
+                <div class="chart-subtitle">Protocolos com demanda real (TVL) e geração de fees</div>
+                <div class="chart-container">
+                    <canvas id="valuation-matrix-chart"></canvas>
+                </div>
+            </section>
+
+            <section class="chart-card primary">
+                <h2>Crescimento vs Qualidade (Upside vs GCE Score)</h2>
+                <div class="chart-subtitle">Equilíbrio entre potencial e a saúde do protocolo</div>
+                <div class="chart-container">
+                    <canvas id="growth-value-chart"></canvas>
+                </div>
+            </section>
+
+            <section class="chart-card secondary">
+                <h2>Distribuição de Scores GCE</h2>
+                <div class="chart-subtitle">Qualidade dos protocolos</div>
+                <div class="chart-container">
+                    <canvas id="score-distribution-chart"></canvas>
+                </div>
+            </section>
+
+            <section class="chart-card secondary">
+                <h2>Distribuição por Setor</h2>
+                <div class="chart-subtitle">Alocação de capital (L1, L2, Utility)</div>
+                <div class="chart-container">
+                    <canvas id="sector-distribution-chart" style="margin-top: -50px; margin-left: 50px;"></canvas>
+                </div>
+            </section>
+
+            <section class="chart-card secondary">
+                <h2>Recomendações GCE</h2>
+                <div class="chart-subtitle">Consenso do modelo de inteligência</div>
+                <div class="chart-container">
+                    <canvas id="recommendation-chart" style="margin-top: -50px; margin-left: 50px;"></canvas>
+                </div>
+            </section>
+
+            <section class="chart-card secondary">
+                <h2>Performance YTD (Bear/Bull)</h2>
+                <div class="chart-subtitle">Top 7 no ano</div>
+                <div class="chart-container">
+                    <canvas id="performance-chart"></canvas>
+                </div>
+            </section>
+            
+            <section class="chart-card secondary">
+                <h2>Drawdown em Bear Market</h2>
+                <div class="chart-subtitle">Resiliência dos protocolos na baixa</div>
+                <div class="chart-container">
+                    <canvas id="dividend-chart"></canvas>
+                </div>
+            </section>
+
+            <section class="chart-card secondary">
+                <h2>Market Cap Distribution</h2>
+                <div class="chart-subtitle">Tamanho de mercado (US$ Bilhões)</div>
+                <div class="chart-container">
+                    <canvas id="marketcap-chart"></canvas>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="modalTitle">Ativos na Partição</h3>
+            <ul id="modalCompanyList" class="modal-company-list">
+                </ul>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>Crypto Engine</strong>
+        </div>
+    </footer>
+
+    <script src="data-crypto.js"></script>
+    <script src="utils.js"></script>
+    <script src="charts-main.js"></script>
+</body>
+</html>

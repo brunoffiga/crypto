@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCE - Intelligence: Overview & Ranking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+
+        :root {
+            --primary: #0066cc;
+            --success: #00c853;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+            --secondary-dark: #2c3e50;
+            --card-bg: #2f4159;
+            --text-light: #f0f4f8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--secondary-dark) 100%);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Navigation - AJUSTADO PARA FICAR IGUAL AO CHARTS.HTML */
+        .main-nav {
+            background: var(--dark);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+        
+        .nav-logo a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            padding: 20px 0;
+        }
+
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(0, 102, 204, 0.2);
+            color: white;
+        }
+
+        /* Hero Header */
+        .hero-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #0052a3 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .hero-title {
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+
+        /* Container */
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Section */
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .section-subtitle {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 25px;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            /* CORREÇÃO UX: Largura mínima para evitar quebra de linha */
+            min-width: 1900px; 
+        }
+        
+        .data-table thead {
+            background: var(--dark);
+        }
+        
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            cursor: pointer;
+            user-select: none;
+            /* Prevenção de quebra de linha no cabeçalho */
+            white-space: nowrap; 
+        }
+        
+        .data-table th:hover {
+            background: rgba(0, 102, 204, 0.1);
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+             /* Prevenção de quebra de linha nos dados */
+            white-space: nowrap; 
+        }
+        
+        .data-table tbody tr {
+            transition: background 0.2s;
+        }
+        
+        .data-table tbody tr:hover {
+            background: rgba(0, 102, 204, 0.15);
+        }
+        
+        .data-table tbody tr.selected {
+            background: rgba(0, 102, 204, 0.3);
+        }
+
+        /* Ticker Link */
+        .ticker-link {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        
+        .ticker-link:hover {
+            text-decoration: none;
+        }
+
+        /* Score Badge */
+        .score-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .score-excellent {
+            background: var(--success);
+            color: white;
+        }
+        
+        .score-good {
+            background: #66bb6a;
+            color: white;
+        }
+        
+        .score-fair {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .score-poor {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* NOVO: Estilo para o número de Score Global no Modal */
+        .analysis-card .score-value-only {
+            background: none !important;
+            padding: 0;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white;
+            /* A cor do texto será definida pela classe de score na tag span */
+        }
+
+
+        /* Change Values */
+        .change-value.positive {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        .change-value.negative {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* Checkbox */
+        .select-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Compare Button */
+        .compare-section {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+        
+        .compare-btn {
+            background: var(--success);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,200,83,0.4);
+            transition: all 0.3s;
+        }
+        
+        .compare-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,200,83,0.6);
+        }
+        
+        .compare-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 10000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+        
+        .modal.active {
+            display: block;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            max-width: 1700px;
+            margin-top: 50px !important;
+            margin: 0 auto;
+            border-radius: 15px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            background: var(--dark);
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 2.2em;
+            color: var(--primary);
+            font-weight: 800;
+        }
+        
+        .modal-subtitle {
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+        }
+        
+        .modal-close {
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            transform: rotate(90deg);
+            background: #d32f2f;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .modal-section {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .modal-section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        /* Analysis Grid */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .analysis-card {
+            background: var(--dark);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .analysis-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        
+        .analysis-card .value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        /* Catalysts & Risks */
+        .catalysts-risks {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .catalysts, .risks {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .catalysts {
+            border-left: 4px solid var(--success);
+        }
+        
+        .risks {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .catalysts h4 {
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+        
+        .risks h4 {
+            color: var(--danger);
+            margin-bottom: 15px;
+        }
+        
+        .catalysts ul, .risks ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .catalysts li, .risks li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .catalysts li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .risks li::before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+        }
+
+        /* Compare Modal */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .compare-card {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+        }
+        
+        .compare-card h3 {
+            color: var(--primary);
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .compare-card .company-name {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 20px;
+        }
+        
+        .compare-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .compare-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+        
+        .compare-metric.highlight {
+            background: rgba(0,102,204,0.2);
+            border: 1px solid var(--primary);
+        }
+        
+        .compare-metric-label {
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .compare-metric-value {
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark);
+            color: white;
+            padding: 30px 20px;
+            margin-top: -10px;
+        }
+        
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .hero-title {
+                font-size: 2em;
+            }
+            .data-table {
+                font-size: 0.85em;
+            }
+            .catalysts-risks {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <span class="logo-text">CRYPTO</span>
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="charts.html" class="nav-link">Gráficos</a></li>
+                <li><a href="timeline.html" class="nav-link">Timeline</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero-header" style="margin-bottom: -80px;">
+        <div class="hero-content">
+            <h1 class="hero-title">CRYPTO ENGINE</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Ranking de Protocolos</h2>
+                <p class="section-subtitle">Score de Qualidade e Projeções de Upside</p>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table" id="companies-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all" class="select-checkbox"></th>
+                            <th data-sort-key="ranking">Rank</th>
+                            <th data-sort-key="ticker">Ticker</th>
+                            <th data-sort-key="protocolType">Tipo (L1/L2)</th>
+                            <th data-sort-key="currentPrice">Preço (US$)</th>
+                            <th data-sort-key="score">GCE Score</th>
+                            
+                            <th data-sort-key="metrics.tvl">TVL</th>
+                            <th data-sort-key="metrics.protocolRevenue">Revenue (1Y)</th>
+                            <th data-sort-key="metrics.mvrvZScore">MVRV Z-Score</th>
+                            
+                            <th data-sort-key="upside1Y">Up 1Y</th>
+                            <th data-sort-key="upside3Y">Up 3Y</th>
+                            <th data-sort-key="upside5Y">Up 5Y</th>
+
+                            <th data-sort-key="projections.target1Y">Target 1Y</th>
+                            <th data-sort-key="projections.target3Y">Target 3Y</th>
+                            <th data-sort-key="projections.target5Y">Target 5Y</th>
+
+                            <th data-sort-key="metrics.activeAddresses">Active Addresses</th>
+                            <th data-sort-key="metrics.volatility60d">Volatilidade (60D)</th>
+                            <th data-sort-key="confidence">Confidence Score</th>
+                            <th data-sort-key="recommendation">Recomendação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companies-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="compare-section">
+        <button class="compare-btn" id="compare-btn" disabled onclick="openCompareModal()">
+            Comparar (<span id="compare-count">0</span>)
+        </button>
+    </div>
+
+    <div class="modal" id="analysis-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="modal-ticker"></div>
+                    <div class="modal-subtitle" id="modal-company"></div>
+                </div>
+                <button class="modal-close" onclick="closeAnalysisModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                </div>
+        </div>
+    </div>
+
+    <div class="modal" id="compare-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title">Comparação de Ativos Crypto</div>
+                    <div class="modal-subtitle">Análise de Protocolos (L1 vs L2)</div>
+                </div>
+                <button class="modal-close" onclick="closeCompareModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="compare-grid" id="compare-grid">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>Crypto Engine</strong>
+        </div>
+    </footer>
+
+    <script src="data-crypto.js"></script>
+    <script src="utils.js"></script> 
+    <script src="crypto-score.js"></script> 
+    <script>
+        // ========================================
+        // APPLICATION STATE & CORE FUNCTIONS (ADAPTED FOR CRYPTO)
+        // ========================================
+        
+        let companiesData = []; // Renomeado, mas representa CRYPTO_DATABASE
+        let selectedCompanies = new Set();
+        let currentSort = { field: 'score', direction: 'desc' };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            // AQUI A CORREÇÃO DO ESCOPO: Chamamos renderTable DEPOIS de carregar os dados
+            renderTable(); 
+            setupEventListeners();
+        });
+        
+        function loadData() {
+            // Assume CRYPTO_DATABASE é carregado de data-crypto.js
+            companiesData = CRYPTO_DATABASE || [];
+            console.log(`✅ ${companiesData.length} criptoativos carregados`);
+            
+            // Adiciona o Confidence Score ao carregar os dados
+            companiesData = companiesData.map(c => {
+                if (typeof calculateCryptoConfidence !== 'undefined') {
+                    // CÁLCULO DE CONFIANÇA
+                    c.confidence = calculateCryptoConfidence(c);
+                    
+                    // CÁLCULO DO SCORE GCE (Substituindo o Score Antigo)
+                    // Nota: Aqui você pode chamar calculateCryptoScore(c) se o tiver no crypto-score.js
+                    // Por enquanto, usamos o score ilustrativo do data-crypto.js
+                }
+
+                // Normaliza Volatilidade (de decimal para %) para exibição
+                c.metrics.volatility60dDisplay = (c.metrics.volatility60d * 100).toFixed(2) + '%'; 
+                return c;
+            });
+        }
+        
+        function setupEventListeners() {
+            // Select all checkbox
+            document.getElementById('select-all').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    companiesData.forEach(c => selectedCompanies.add(c.ticker));
+                } else {
+                    selectedCompanies.clear();
+                }
+                renderTable();
+                updateCompareButton();
+            });
+            
+            // Sort headers
+            document.querySelectorAll('th[data-sort-key]').forEach(th => {
+                th.addEventListener('click', () => {
+                    handleSort(th.dataset.sortKey);
+                });
+            });
+        }
+        
+        // ========================================
+        // PROJECTION ACCESS & CALCULATION (Adapted for Crypto)
+        // ========================================
+        
+        /**
+         * Calcula o Upside dado um Preço Alvo e o Preço Atual (simples)
+         */
+        function calculateUpside(currentPrice, targetPrice) {
+            if (!currentPrice || !targetPrice) return null;
+            return ((targetPrice - currentPrice) / currentPrice) * 100;
+        }
+
+        /**
+         * Obtém o Target Price de um horizonte específico (1Y, 3Y, 5Y).
+         */
+        function getTargetPrice(company, horizon) {
+            // Priority: projections > upsideTarget
+            const target = company.projections ? company.projections[`target${horizon}`] : null;
+            
+            // Fallback para o campo ilustrativo 'upsideTarget' se 5Y for solicitado e projections for null
+            if (!target && horizon === '5Y' && company.upsideTarget) {
+                 return company.upsideTarget;
+            }
+
+            return target;
+        }
+
+        // ========================================
+        // TABLE RENDERING (Adapted for Crypto Metrics)
+        // ========================================
+        
+        function renderTable() {
+            const tbody = document.getElementById('companies-table-body');
+            const sorted = sortCompanies([...companiesData]);
+            
+            tbody.innerHTML = sorted.map(company => {
+                const isSelected = selectedCompanies.has(company.ticker);
+                
+                // 1. OBTENÇÃO DOS TARGETS
+                const target1Y = getTargetPrice(company, '1Y'); 
+                const target3Y = getTargetPrice(company, '3Y'); 
+                const target5Y = getTargetPrice(company, '5Y'); 
+                
+                // 2. CÁLCULO DOS UPSIDES RELACIONADOS
+                const upside1Y = calculateUpside(company.currentPrice, target1Y);
+                const upside3Y = calculateUpside(company.currentPrice, target3Y);
+                const upside5Y = calculateUpside(company.currentPrice, target5Y);
+
+                // 3. Demais dados da tabela
+                const tvl = company.metrics?.tvl;
+                const revenue = company.metrics?.protocolRevenue;
+                const mvrv = company.metrics?.mvrvZScore;
+                const activeAddresses = company.metrics?.activeAddresses;
+                const score = company.score;
+                const confidence = company.confidence;
+
+
+                // Helper para formatar valores grandes (R$ B/M)
+                const formatCryptoValue = (value) => {
+                    if (value === null || value === undefined) return '-';
+                    if (value >= 1e12) return `$ ${(value / 1e12).toFixed(2)}T`;
+                    if (value >= 1e9) return `$ ${(value / 1e9).toFixed(2)}B`;
+                    if (value >= 1e6) return `$ ${(value / 1e6).toFixed(2)}M`;
+                    return `$ ${value.toFixed(0)}`;
+                };
+                
+                // Helper para formatar MVRV (destaque se < 1 - Fundo)
+                const formatMVRV = (value) => {
+                    if (value === null || value === undefined) return '-';
+                    const colorClass = value < 1 ? 'change-value negative' : 'change-value positive';
+                    return `<span class="${colorClass}">${value.toFixed(2)}</span>`;
+                };
+
+
+                return `
+                    <tr class="${isSelected ? 'selected' : ''}" data-ticker="${company.ticker}">
+                        <td>
+                            <input type="checkbox" 
+                                   class="select-checkbox" 
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="toggleSelection('${company.ticker}')">
+                        </td>
+                        <td>${company.ranking}</td>
+                        <td>
+                            <a href="#" class="ticker-link" onclick="openAnalysisModal('${company.ticker}'); return false;">
+                                ${company.ticker}
+                            </a>
+                        </td>
+                        <td>${company.protocolType}</td>
+                        <td>$ ${company.currentPrice.toFixed(2)}</td>
+                        <td>
+                            <span class="score-badge ${getScoreClass(company.score)}">
+                                ${company.score}
+                            </span>
+                        </td>
+                        <td>${formatCryptoValue(tvl)}</td>
+                        <td>${formatCryptoValue(revenue)}</td>
+                        <td>${formatMVRV(mvrv)}</td>
+                        
+                        <td class="change-value ${upside1Y > 0 ? 'positive' : 'negative'}">${formatPercentage(upside1Y)}</td>
+                        <td class="change-value ${upside3Y > 0 ? 'positive' : 'negative'}">${formatPercentage(upside3Y)}</td>
+                        <td class="change-value ${upside5Y > 0 ? 'positive' : 'negative'}">${formatPercentage(upside5Y)}</td>
+
+                        <td>$ ${target1Y?.toFixed(2) || '-'}</td>
+                        <td>$ ${target3Y?.toFixed(2) || '-'}</td>
+                        <td>$ ${target5Y?.toFixed(2) || '-'}</td>
+
+                        <td>${activeAddresses ? activeAddresses.toLocaleString('en-US') : '-'}</td>
+                        <td>${company.metrics.volatility60dDisplay}</td>
+                        <td>${confidence.toFixed(0)}%</td>
+                        <td>${company.recommendation}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            if (companiesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="19" style="text-align:center;">Nenhum ativo encontrado no database.</td></tr>';
+            }
+        }
+        
+        // Lógica de ordenação adaptada para buscar os novos campos
+        function sortCompanies(companies) {
+            return companies.sort((a, b) => {
+                const { field, direction } = currentSort;
+                const mult = direction === 'asc' ? 1 : -1;
+                
+                // Função de acesso aninhado (melhorada para targets/upsides)
+                const getNestedValue = (obj, path) => {
+                    if (!obj || !path) return null;
+
+                    // 1. Target Price
+                    if (path.startsWith('projections.target')) {
+                        const horizon = path.replace('projections.target', '');
+                        return getTargetPrice(obj, horizon); 
+                    }
+                    
+                    // 2. Upside
+                    if (path.startsWith('upside')) {
+                         const horizon = path.replace('upside', '');
+                         return calculateUpside(obj.currentPrice, getTargetPrice(obj, horizon));
+                    }
+                    
+                    // 3. Volatilidade (Converte de decimal para número para ordenação)
+                    if (path === 'metrics.volatility60d') {
+                        return obj.metrics?.volatility60d; 
+                    }
+
+                    // 4. Acesso Padrão (Score, TVL, etc.)
+                    return path.split('.').reduce((o, i) => (o && o[i] !== undefined) ? o[i] : null, obj);
+                };
+
+                let aVal = getNestedValue(a, field);
+                let bVal = getNestedValue(b, field);
+                
+                // Lidar com strings (Tickers, Setores)
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    return mult * aVal.localeCompare(bVal);
+                }
+                
+                // Mover null/undefined para o final
+                if (aVal === null || aVal === undefined) return 1;
+                if (bVal === null || bVal === undefined) return -1;
+
+                // Ordenação numérica
+                return mult * (aVal - bVal);
+            });
+        }
+        
+        function handleSort(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                // Heurística de UX: a maioria das métricas (score, preço, upside) se quer no 'desc'
+                currentSort.direction = ['ticker', 'sector', 'protocolType', 'recommendation'].includes(field) ? 'asc' : 'desc';
+            }
+            renderTable();
+        }
+
+        // Funções de seleção e modal (mantidas no escopo original, apenas para garantir o HTML funcional)
+        function toggleSelection(ticker) {
+            if (selectedCompanies.has(ticker)) {
+                selectedCompanies.delete(ticker);
+            } else {
+                selectedCompanies.add(ticker);
+            }
+            renderTable();
+            updateCompareButton();
+        }
+        
+        function updateCompareButton() {
+            const btn = document.getElementById('compare-btn');
+            const count = document.getElementById('compare-count');
+            count.textContent = selectedCompanies.size;
+            btn.disabled = selectedCompanies.size < 2;
+        }
+
+        // ========================================
+        // MODAL CONTENT ADAPTATION
+        // ========================================
+
+        function formatCryptoValue(value) {
+            if (value === null || value === undefined) return '-';
+            if (value >= 1e12) return `$ ${(value / 1e12).toFixed(2)}T`;
+            if (value >= 1e9) return `$ ${(value / 1e9).toFixed(2)}B`;
+            if (value >= 1e6) return `$ ${(value / 1e6).toFixed(2)}M`;
+            return `$ ${value.toFixed(2)}`;
+        }
+        
+        function generateAnalysisHTML(company) {
+            // CÁLCULO DE CONFIANÇA DO NOVO MODELO
+            const report = generateConfidenceReport(company);
+            const convictionScore = report.overall;
+            const convictionRating = Math.round(convictionScore / 20);
+            
+            // DADOS DE PROJEÇÃO E VALUATION
+            const target1Y = getTargetPrice(company, '1Y');
+            const target5Y = getTargetPrice(company, '5Y');
+            const upside1Y = calculateUpside(company.currentPrice, target1Y);
+            const upside5Y = calculateUpside(company.currentPrice, target5Y);
+
+            // Placeholder para os Highlights (evitando Uncaught)
+            const getArrayContent = (arr) => arr && Array.isArray(arr) ? arr.map(c => `<li>${c}</li>`).join('') : '<li>Dados não disponíveis.</li>';
+            
+            return `
+                <div class="modal-section">
+                    <h3>⭐ Scores Multidimensionais</h3>
+                    <div class="analysis-grid">
+                        <div class="analysis-card">
+                            <h4>GCE Score (Qualidade)</h4>
+                             <span class="score-badge score-value-only ${getScoreClass(company.score)}">
+                                ${company.score}
+                            </span>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Confidence Score</h4>
+                            <div class="value" style="font-size: 1.5em; color: ${report.icon === '✅' ? 'var(--success)' : report.icon === '🟢' ? 'var(--success)' : report.icon === '🟡' ? 'var(--warning)' : 'var(--danger)'};">
+                                ${convictionScore.toFixed(0)}%
+                            </div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>MVRV Z-Score</h4>
+                            <div class="value" style="color: ${company.metrics.mvrvZScore < 1 ? 'var(--success)' : 'var(--warning)'};">${company.metrics.mvrvZScore?.toFixed(2) || '-'}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Upside 12M</h4>
+                            <div class="value" style="color: var(--success);">${formatPercentage(upside1Y)}</div>
+                        </div>
+                    </div>
+                     <div class="chart-container">
+                        <canvas id="scores-chart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>💰 Valuation & Potencial de Rede</h3>
+                    <div class="analysis-grid">
+                        <div class="analysis-card">
+                            <h4>Preço Atual</h4>
+                            <div class="value">$ ${company.currentPrice?.toFixed(2) || '-'}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Target 5Y (Projeção)</h4>
+                            <div class="value">${formatCryptoValue(target5Y)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>TVL (Capital Bloqueado)</h4>
+                            <div class="value">${formatCryptoValue(company.metrics.tvl)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Revenue (Protocol Fees)</h4>
+                            <div class="value">${formatCryptoValue(company.metrics.protocolRevenue)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>📊 Risco e Adoção</h3>
+                    <div class="analysis-grid">
+                        <div class="analysis-card">
+                            <h4>Market Cap</h4>
+                            <div class="value">${formatCryptoValue(company.marketCap)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Smart Contract Risk</h4>
+                            <div class="value" style="color: ${company.metrics.smartContractRisk < 20 ? 'var(--success)' : 'var(--danger)'};">${company.metrics.smartContractRisk}%</div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Decentralization Score</h4>
+                            <div class="value" style="color: ${company.metrics.decentralizationScore > 80 ? 'var(--success)' : 'var(--warning)'};">${company.metrics.decentralizationScore} / 100</div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Active Addresses</h4>
+                            <div class="value" style="font-size: 1.5em;">${company.metrics.activeAddresses?.toLocaleString('en-US') || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>🎯 Roadmap & Riscos Regulatórios</h3>
+                    <div class="catalysts-risks">
+                        <div class="catalysts">
+                            <h4>✅ Roadmap Events</h4>
+                            <ul>${getArrayContent(company.roadmapEvents)}</ul>
+                        </div>
+                        <div class="risks">
+                            <h4>⚠️ Regulatory Risks</h4>
+                            <ul>${getArrayContent(company.regulatoryRisks)}</ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section" style="border-left: 4px solid ${
+                    company.recommendation.includes('BUY') ? 'var(--success)' : 
+                    company.recommendation.includes('HOLD') ? 'var(--warning)' : 'var(--danger)'
+                };">
+                    <h3>🎲 Recomendação: ${company.recommendation}</h3>
+                    <p>Fator de Conviction: <strong style="color: var(--primary);">${convictionRating} / 5</strong> (${report.description})</p>
+                    <p style="margin-top: 15px; line-height: 1.8;">
+                        **Tese:** ${company.sector} | **Tipo:** ${company.protocolType}.
+                        Upside ${formatPercentage(upside1Y)} em 12 meses. Tese de longo prazo: ${formatPercentage(upside5Y)} (5Y).
+                    </p>
+                </div>
+            `;
+        }
+        
+        function openAnalysisModal(ticker) {
+            const company = companiesData.find(c => c.ticker === ticker);
+            if (!company) return;
+            
+            document.getElementById('modal-ticker').textContent = company.ticker;
+            document.getElementById('modal-company').textContent = company.name;
+            
+            // 1. Gerar o HTML
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = generateAnalysisHTML(company); 
+            
+            // 2. Mostrar o modal
+            document.getElementById('analysis-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // 3. Renderizar gráficos com pequeno delay
+            setTimeout(() => {
+                renderPriceChart(company); // Adaptação: Gráfico de preço e targets
+                renderScoresChart(company); // Adaptação: Radar de métricas crypto
+            }, 100);
+        }
+
+        // Render Price Chart (Gráfico de preço e targets)
+        function renderPriceChart(company) {
+            const ctx = document.getElementById('price-chart');
+            if (!ctx) return;
+            
+            const periods = ['Atual', '1Y', '3Y', '5Y'];
+            const prices = [
+                company.currentPrice, 
+                getTargetPrice(company, '1Y'), 
+                getTargetPrice(company, '3Y'), 
+                getTargetPrice(company, '5Y')
+            ];
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: periods,
+                    datasets: [
+                    {
+                        label: 'Preço Alvo (US$)',
+                        data: prices,
+                        backgroundColor: periods.map((p, i) => i === 0 ? '#ff9800' : '#00c853'),
+                        borderColor: '#1a1a2e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        y: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { callback: function(value) { return '$' + value.toFixed(0); } }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render Scores Chart (Radar de métricas crypto)
+        function renderScoresChart(company) {
+            const ctx = document.getElementById('scores-chart');
+            if (!ctx) return;
+            
+            // Normalizar valores para o radar (0-100)
+            const scoreData = [
+                company.score, // GCE Score (0-100)
+                company.metrics.decentralizationScore || 0, // Descentralização (0-100)
+                Math.min(100, (company.metrics.tvl / company.marketCap) * 100), // TVL/MC (Valor)
+                Math.min(100, (company.metrics.protocolRevenue || 0) / 1e8 * 10), // Revenue (Simulação)
+                Math.max(0, 100 - (company.metrics.smartContractRisk || 0)), // Segurança (Inverso do Risco)
+            ];
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['GCE Score', 'Decentralização', 'TVL/MC (Valor)', 'Revenue (Fees)', 'Segurança (Inverso Risco)'],
+                    datasets: [{
+                        label: company.ticker,
+                        data: scoreData,
+                        backgroundColor: 'rgba(0, 102, 204, 0.2)',
+                        borderColor: '#0066cc',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#00c853'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                            pointLabels: { color: 'white' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)', backdropColor: 'var(--card-bg)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+        
+        function closeAnalysisModal() {
+            document.getElementById('analysis-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // [FUNÇÕES COMPARE MODAL]
+        function openCompareModal() {
+            const selected = Array.from(selectedCompanies).map(ticker => 
+                companiesData.find(c => c.ticker === ticker)
+            );
+            
+            const grid = document.getElementById('compare-grid');
+            
+            grid.innerHTML = selected.map(company => {
+                
+                // 1. OBTENÇÃO DOS TARGETS E UPSIDES NECESSÁRIOS
+                const target1Y = getTargetPrice(company, '1Y');
+                const target5Y = getTargetPrice(company, '5Y');
+
+                const upside1Y = calculateUpside(company.currentPrice, target1Y);
+                const upside5Y = calculateUpside(company.currentPrice, target5Y);
+                
+                return `
+                    <div class="compare-card">
+                        <h3>${company.ticker}</h3>
+                        <div class="company-name">${company.name}</div>
+                        
+                        <div class="compare-metrics">
+                            <div class="compare-metric">
+                                <span class="compare-metric-label">GCE Score</span>
+                                <span class="compare-metric-value">${company.score}</span>
+                            </div>
+                            <div class="compare-metric">
+                                <span class="compare-metric-label">Preço Atual</span>
+                                <span class="compare-metric-value">$ ${company.currentPrice.toFixed(2)}</span>
+                            </div>
+                            
+                            <div class="compare-metric highlight">
+                                <span class="compare-metric-label">Up 1Y</span>
+                                <span class="compare-metric-value ${upside1Y > 0 ? 'change-value positive' : 'change-value negative'}">
+                                    ${formatPercentage(upside1Y)}
+                                </span>
+                            </div>
+                            <div class="compare-metric highlight">
+                                <span class="compare-metric-label">Up 5Y</span>
+                                <span class="compare-metric-value ${upside5Y > 0 ? 'change-value positive' : 'change-value negative'}">
+                                    ${formatPercentage(upside5Y)}
+                                </span>
+                            </div>
+
+                            <div class="compare-metric">
+                                <span class="compare-metric-label">TVL</span>
+                                <span class="compare-metric-value">${formatCryptoValue(company.metrics.tvl)}</span>
+                            </div>
+                            <div class="compare-metric">
+                                <span class="compare-metric-label">Revenue (Fees)</span>
+                                <span class="compare-metric-value">${formatCryptoValue(company.metrics.protocolRevenue)}</span>
+                            </div>
+                            <div class="compare-metric">
+                                <span class="compare-metric-label">MVRV Z-Score</span>
+                                <span class="compare-metric-value">${company.metrics.mvrvZScore?.toFixed(2) || '-'}</span>
+                            </div>
+                            <div class="compare-metric highlight">
+                                <span class="compare-metric-label">Smart Contract Risk</span>
+                                <span class="compare-metric-value" style="color: ${company.metrics.smartContractRisk < 20 ? 'var(--success)' : 'var(--danger)'};">${company.metrics.smartContractRisk}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Ativa o modal
+            document.getElementById('compare-modal').classList.add('active'); 
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeCompareModal() {
+            document.getElementById('compare-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
+</body>
+</html>
